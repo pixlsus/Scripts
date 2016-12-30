@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+
+# This Bash4 script uses DCamProf and ArgyllCMS to generate DCP profiles.
+# It uses Exiv2 or ExifTool to extract the camera model if one is not
+# manually provided as a parameter (-c).
+#
+# Read the RawPedia article, "How to create DCP color profiles".
+# Run the script from a folder which contains the DCamProf executable and the
+# daylight.tif and/or tungsten.tif files.
+#
+# Blame DrSlony
+# Version 2016-12-30
+# Please report bugs or enhancements to https://github.com/Beep6581/RawTherapee
+
+scaninCmd="argyll-scanin"
+exifCmd=""
+copyright="RawTherapee CC0" # For a profile to be bundled with RawTherapee it must be in the public domain (CC0).
+printFormat='\n\n\n%s ----------------------------------------\n\n'
+
+# No touching below this line ------------------------------------------------
+
+unset exec tungsten daylight suffix
+
+OPTIND=1
+while getopts "c:t:o:g:h?-" opt; do
+    case "${opt}" in
+        c)  camera="$OPTARG"
+            ;;
+        t)  curve="$OPTARG"
+            ;;
+        o)  tro="$OPTARG"
+            ;;
+        g)  gamut="$OPTARG"
+            ;;
+        h|\?|-) printf '%s\n' "Usage:" \
+                "Run the script from a folder which contains the DCamProf executable and the daylight.tif and/or tungsten.tif files." \
+                "" \
+                "  $0 -c \"<camera name>\" -t <tone-curve> -o <tone reproduction operator> -g <gamut compression>" \
+                "" \
+                "  -c \"<camera name>\"" \
+                "     Optional. Specify the camera name, remember to surround it in double-quotes. If not specified, exiv2 or exiftool are used." \
+                "" \
+                "  -t <acr|linear|none>" \
+                "     Optional. Specify which tone-curve to embed. If unspecified, defaults to \"acr\"." \
+                "" \
+                "  -o <neutral|standard>" \
+                "     Optional. Specify the tone reproduction operator. Only used if -t is \"acr\". If unspecified, defaults to \"neutral\"." \
+                "" \
+                "  -g <none|srgb|srgb-strong|adobergb|adobergb-strong>" \
+                "     Optional. Specify gamut compression. Only used if -t is \"none\". If unspecified, defaults to \"none\"." \
+                ""
+        exit 0
+        ;;
+esac
+done
+shift $((OPTIND-1))
+[ "$1" = "--" ] && shift
+
+# Check for dcamprof
+if [[ -x ./dcamprof ]]; then
+    dcamprofCmd="./dcamprof"
+else
+    printf '%s\n' "dcamprof not found, get it from" "http://www.ludd.ltu.se/~torger/dcamprof.html"
+    exit 0
+fi
+
+# Check for argyll-scanin
+command -v "$scaninCmd" >/dev/null 2>&1
+if [[ $? -ne 0 ]]; then
+    command -v scanin >/dev/null 2>&1
+    if [[ $? -ne 0 ]]; then
+        printf '%s\n' "DCamProf requires the \"scanin\" command from ArgyllCMS." "Make sure ArgyllCMS is installed." "Could not find a working \"scanin\" command. Aborting."
+        exit 0
+    else
+        scaninCmd="scanin"
+    fi
+fi
+
+# Check for Exiv2/ExifTool if camera model not provided
+if [[ -z $camera ]]; then
+    command -v exiv2 >/dev/null 2>&1
+    if [[ $? -ne 0 ]]; then
+        command -v exiftool >/dev/null 2>&1
+        if [[ $? -ne 0 ]]; then
+            printf '%s\n' "Install Exiv2 or ExifTool and re-run this script." "Aborting."
+            exit 0
+        else
+            exifCmd="exiftool -T -Model"
+        fi
+    else
+        exifCmd="exiv2 -g Exif.Image.Model -Pv"
+    fi
+    if [[ -e tungsten.tif ]]; then
+        camera="$(${exifCmd} tungsten.tif)"
+        if [[ -z $camera ]]; then
+            printf '%s\n' "Could not find camera model in tungsten.tif's metadata." "Re-run the script and provide the camera model manually."
+            exit 0
+        fi
+    fi
+    if [[ -e daylight.tif ]]; then
+        camera="$(${exifCmd} daylight.tif)"
+        if [[ -z $camera ]]; then
+            printf '%s\n' "Could not find camera model in daylight.tif's metadata." "Re-run the script and provide the camera model manually."
+            exit 0
+        fi
+    fi
+fi
+
+# Check for input files
+if [[ ! -e tungsten.tif && ! -e daylight.tif ]]; then
+    printf '%s\n' "Neither daylight.tif nor tungsten.tif was found in the current folder. Aborting."
+    exit 0
+fi
+
+# Assign defaults if parameters not provided.
+case "$tro" in
+    s|standard) tro="standard" ;;
+    *)          tro="neutral" ;;
+esac
+case "$curve" in
+    l|linear)   curve="linear" ;;
+    n|none)     curve="none" ;;
+    *)          curve="acr" ;;
+esac
+case "$gamut" in
+    s|srgb)             gamut="srgb" ;;
+    ss|srgb-strong)     gamut="srgb-strong" ;;
+    a|adobergb)         gamut="adobergb" ;;
+    as|adobergb-strong) gamut="adobergb-strong" ;;
+    *)                  gamut="none" ;;
+esac
+
+# Clean up from previous runs.
+rm daylight.ti3 daylight.json daylight-diag.tif tungsten.ti3 tungsten.json tungsten-diag.tif 2>/dev/null
+
+if [[ -e tungsten.tif ]]; then
+    tungsten="tungsten.tif"
+    printf "${printFormat}" "${scaninCmd} tungsten"
+    ${scaninCmd} -v -G 0.454545 -p -digIcrpn tungsten.tif /usr/share/argyllcms/ref/ColorChecker.cht data-examples/cc24_ref.cie tungsten-diag.tif
+    printf "${printFormat}" "make-profile tungsten"
+    ${dcamprofCmd} make-profile -i StdA tungsten.ti3 tungsten.json 2>&1
+    #${dcamprofCmd} make-profile -i StdA -w all 1.5,1,8,2,1 tungsten.ti3 tungsten1.json
+    #${dcamprofCmd} make-profile -i StdA -w all 1.5,1,8,2,1 -l 0.1,0.1 tungsten.ti3 tungsten2.json
+    #${dcamprofCmd} make-profile -i StdA -w all 1.5,1,8,2,1 -l -1,0 tungsten.ti3 tungsten3.json
+fi
+
+if [[ -e daylight.tif ]]; then
+    daylight="daylight.tif"
+    printf "${printFormat}" "${scaninCmd} daylight"
+    "$scaninCmd" -v -G 0.454545 -p -digIcrpn daylight.tif /usr/share/argyllcms/ref/ColorChecker.cht data-examples/cc24_ref.cie daylight-diag.tif
+    printf "${printFormat}" "make-profile daylight"
+    ${dcamprofCmd} make-profile -i D50 -C daylight.ti3 daylight.json 2>&1
+    #${dcamprofCmd} make-profile -i D50 -C -w all 1.5,1,8,2,1 daylight.ti3 daylight1.json
+    #${dcamprofCmd} make-profile -i D50 -C -w all 1.5,1,8,2,1 -l 0.1,0.1 daylight.ti3 daylight2.json
+    #${dcamprofCmd} make-profile -i D50 -C -w all 1.5,1,8,2,1 -l -1,0 daylight.ti3 daylight3.json
+fi
+
+#for relax in {0..3}; do
+#    ${dcamprofCmd} make-dcp -n "${camera}" -d "${camera}" -c "Morgan Hardwood/RawTherapee" -t acr ${tungsten%.tif}${tungsten:+${relax}.json} ${daylight%.tif}${daylight:+${relax}.json} "${camera} ${relax}.dcp"
+#done
+
+printf "${printFormat}" "make-dcp"
+printf '%s\n' "Camera: $camera" "Copyright: $copyright" "Curve: $curve" "TRO: $tro" "Gamut: $gamut" ""
+read -r -p "Enter DCP filename suffix, if any: " suffix
+echo
+# :+ uses an alternate value. If suffix is unset or empty, it expands to nothing, else it expands to " ${suffix}" with the space before the suffix.
+${dcamprofCmd} make-dcp -n "${camera}" -d "${camera}" -c "${copyright}" -t "${curve}" -o "${tro}" -g "${gamut}" ${tungsten%.tif}${tungsten:+.json} ${daylight%.tif}${daylight:+.json} "${camera}${suffix:+ ${suffix}}.dcp" 2>&1
+
+ls -lah *.dcp
