@@ -9,7 +9,7 @@
 # daylight.tif and/or tungsten.tif files.
 #
 # Blame DrSlony
-# Version 2016-12-30
+# Version 2016-12-31
 # Please report bugs or enhancements to https://github.com/Beep6581/RawTherapee
 
 scaninCmd="argyll-scanin"
@@ -47,7 +47,7 @@ while getopts "c:t:o:g:h?-" opt; do
                 "     Optional. Specify the tone reproduction operator. Only used if -t is \"acr\". If unspecified, defaults to \"neutral\"." \
                 "" \
                 "  -g <none|srgb|srgb-strong|adobergb|adobergb-strong>" \
-                "     Optional. Specify gamut compression. Only used if -t is \"none\". If unspecified, defaults to \"none\"." \
+                "     Optional. Specify gamut compression. Only used if -t is \"linear\". If unspecified, defaults to \"none\"." \
                 ""
         exit 0
         ;;
@@ -166,4 +166,4 @@ echo
 # :+ uses an alternate value. If suffix is unset or empty, it expands to nothing, else it expands to " ${suffix}" with the space before the suffix.
 ${dcamprofCmd} make-dcp -n "${camera}" -d "${camera}" -c "${copyright}" -t "${curve}" -o "${tro}" -g "${gamut}" ${tungsten%.tif}${tungsten:+.json} ${daylight%.tif}${daylight:+.json} "${camera}${suffix:+ ${suffix}}.dcp" 2>&1
 
-ls -lah *.dcp
+#ls -lah *.dcp
