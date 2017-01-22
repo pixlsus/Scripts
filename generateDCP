@@ -9,7 +9,7 @@
 # daylight.tif and/or tungsten.tif files.
 #
 # Blame DrSlony
-# Version 2016-12-31
+# Version 2017-01-22
 # Please report bugs or enhancements to https://github.com/Beep6581/RawTherapee
 
 scaninCmd="argyll-scanin"
@@ -22,7 +22,7 @@ printFormat='\n\n\n%s ----------------------------------------\n\n'
 unset exec tungsten daylight suffix
 
 OPTIND=1
-while getopts "c:t:o:g:h?-" opt; do
+while getopts "c:t:o:g:l:r:h?-" opt; do
     case "${opt}" in
         c)  camera="$OPTARG"
             ;;
@@ -31,6 +31,10 @@ while getopts "c:t:o:g:h?-" opt; do
         o)  tro="$OPTARG"
             ;;
         g)  gamut="$OPTARG"
+            ;;
+        l)  layout="$OPTARG"
+            ;;
+        r)  ref="$OPTARG"
             ;;
         h|\?|-) printf '%s\n' "Usage:" \
                 "Run the script from a folder which contains the DCamProf executable and the daylight.tif and/or tungsten.tif files." \
@@ -48,6 +52,21 @@ while getopts "c:t:o:g:h?-" opt; do
                 "" \
                 "  -g <none|srgb|srgb-strong|adobergb|adobergb-strong>" \
                 "     Optional. Specify gamut compression. Only used if -t is \"linear\". If unspecified, defaults to \"none\"." \
+                "" \
+                "  -l <cc|ccp|it8|/path/to/layout.cht>" \
+                "     Optional. Select layout file." \
+                "       cc = ColorChecker" \
+                "       ccp = ColorCheckerPassport" \
+                "       it8 = IT 8.7/2-1993" \
+                "       Or custom path." \
+                "       If unspecified, defaults to \"/usr/share/argyllcms/ref/ColorCheckerPassport.cht\"." \
+                "" \
+                "  -r <cc|ccnew|/path/to/reference.cie>" \
+                "     Optional. Select reference file." \
+                "       cc = data-examples/cc24_ref.cie - For ColorChecker24 targets produced before November 2014." \
+                "       ccnew = data-examples/cc24_ref-new.cie - For ColorChecker24 targets produced from Novermber 2014 onwards." \
+                "       Or custom path." \
+                "       If unspecified, defaults to \"data-examples/cc24_ref.cie\"." \
                 ""
         exit 0
         ;;
@@ -129,6 +148,29 @@ case "$gamut" in
     as|adobergb-strong) gamut="adobergb-strong" ;;
     *)                  gamut="none" ;;
 esac
+case "$layout" in
+    cc)     layout="/usr/share/argyllcms/ref/ColorChecker.cht" ;;
+    ccp)    layout="/usr/share/argyllcms/ref/ColorCheckerPassport.cht" ;;
+    it8)    layout="/usr/share/argyllcms/ref/it8.cht" ;;
+    *)      ;;
+esac
+case "$ref" in
+    cc|ccold)   ref="data-examples/cc24_ref.cie" ;;
+    ccnew)      ref="data-examples/cc24_ref-new.cie" ;;
+    *)          ;;
+esac
+
+# Check for layout file
+if [[ ! -e $layout ]]; then
+    printf '%s\n' "Layout file \"${layout}\" not found. Aborting."
+    exit 0
+fi
+
+# Check for reference file
+if [[ ! -e $ref ]]; then
+    printf '%s\n' "Reference file \"${ref}\" not found. Aborting."
+    exit 0
+fi
 
 # Clean up from previous runs.
 rm daylight.ti3 daylight.json daylight-diag.tif tungsten.ti3 tungsten.json tungsten-diag.tif 2>/dev/null
@@ -136,7 +178,7 @@ rm daylight.ti3 daylight.json daylight-diag.tif tungsten.ti3 tungsten.json tungs
 if [[ -e tungsten.tif ]]; then
     tungsten="tungsten.tif"
     printf "${printFormat}" "${scaninCmd} tungsten"
-    ${scaninCmd} -v -G 0.454545 -p -digIcrpn tungsten.tif /usr/share/argyllcms/ref/ColorChecker.cht data-examples/cc24_ref.cie tungsten-diag.tif
+    ${scaninCmd} -v -G 0.454545 -p -digIcrpn tungsten.tif "${layout}" "${ref}" tungsten-diag.tif
     printf "${printFormat}" "make-profile tungsten"
     ${dcamprofCmd} make-profile -i StdA tungsten.ti3 tungsten.json 2>&1
     #${dcamprofCmd} make-profile -i StdA -w all 1.5,1,8,2,1 tungsten.ti3 tungsten1.json
@@ -147,7 +189,7 @@ fi
 if [[ -e daylight.tif ]]; then
     daylight="daylight.tif"
     printf "${printFormat}" "${scaninCmd} daylight"
-    "$scaninCmd" -v -G 0.454545 -p -digIcrpn daylight.tif /usr/share/argyllcms/ref/ColorChecker.cht data-examples/cc24_ref.cie daylight-diag.tif
+    "$scaninCmd" -v -G 0.454545 -p -digIcrpn daylight.tif "${layout}" "${ref}" daylight-diag.tif
     printf "${printFormat}" "make-profile daylight"
     ${dcamprofCmd} make-profile -i D50 -C daylight.ti3 daylight.json 2>&1
     #${dcamprofCmd} make-profile -i D50 -C -w all 1.5,1,8,2,1 daylight.ti3 daylight1.json
