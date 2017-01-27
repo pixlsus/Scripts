@@ -13,7 +13,7 @@ Open a terminal in this directory and execute the script with `./SR.sh`. It will
 ## SAMPLE IMAGES:
 I've included a small series of sample images so that you can test the script on your system, which can be found in the `sample_images` subdirectory. These are a series of 8 megapixel jpeg images shot with a Nexus 5x Android phone, handheld, using the awesome Open Camera app (FOSS!). The images are of my bookshelf here in my campus office, which offers enough detail to see the difference between the original 8 megapixel versions, and the ~32 megapixel result of the super resolution. You can use these images to experiment with the script, but  here are some results using the default values (shown at a 400% crop):
 
------------------- **Orignal image** -------------------------------------- **Superresolution** ---------------------------
+---------------- **Orignal image** -------------------------------- **Superresolution** ----------------
 
  ![Original 400% crop](sample_images/sample_outputs/original_400pcnt.jpg  "Original 400% crop")  ![Superresolution 400% crop](sample_images/sample_outputs/superres_400pcnt.jpg  "Superresolution 400% crop") 
 
