@@ -70,7 +70,7 @@ while getopts "c:t:o:g:l:r:h?-" opt; do
                 ""
         exit 0
         ;;
-esac
+    esac
 done
 shift $((OPTIND-1))
 [ "$1" = "--" ] && shift
@@ -152,11 +152,13 @@ case "$layout" in
     cc)     layout="/usr/share/argyllcms/ref/ColorChecker.cht" ;;
     ccp)    layout="/usr/share/argyllcms/ref/ColorCheckerPassport.cht" ;;
     it8)    layout="/usr/share/argyllcms/ref/it8.cht" ;;
+    "")     layout="/usr/share/argyllcms/ref/ColorChecker.cht" ;;
     *)      ;;
 esac
 case "$ref" in
     cc|ccold)   ref="data-examples/cc24_ref.cie" ;;
     ccnew)      ref="data-examples/cc24_ref-new.cie" ;;
+    "")         ref="data-examples/cc24_ref.cie" ;;
     *)          ;;
 esac
 
