@@ -9,7 +9,7 @@
 # daylight.tif and/or tungsten.tif files.
 #
 # Blame DrSlony
-# Version 2017-01-22
+# Version 2017-03-06
 # Please report bugs or enhancements to https://github.com/Beep6581/RawTherapee
 
 scaninCmd="argyll-scanin"
