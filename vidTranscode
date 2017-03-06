@@ -1,23 +1,21 @@
 #!/usr/bin/env bash
 #
+# vidTranscode
+# Version: 2017-03-06
+# By: DrSlony
+# Licence: CC0
+#
 # This Bash script transcodes the specificed video files (wildcards supported) to lossy h.264 format in an MP4 container.
 #
 # Usage:
-# ./conv <video/files/with/path.ext>
+# ./vidTranscode <video/files/with/path.ext>
 #
 # Examples:
-# /home/you/scripts/conv /home/you/videos/foo.avi
-# /home/you/scripts/conv /home/you/videos/*.avi
-# /home/you/scripts/conv /home/you/videos/*
+# /home/you/scripts/vidTranscode /home/you/videos/foo.avi
+# /home/you/scripts/vidTranscode /home/you/videos/*.avi
+# /home/you/scripts/vidTranscode /home/you/videos/*
 #
-# Parameters:
-cv="libx264"
-crf="23"
-preset="slow"
-ca="libfdk_aac"
-ba="192k"
-#
-#
+# Or create the .desktop file as shown below, select a bunch of files in your file manager and open them with this script.
 # Sample .desktop file in $HOME/.local/share/applications/vidTranscode.desktop
 #
 # [Desktop Entry]
@@ -32,6 +30,13 @@ ba="192k"
 # Terminal=true
 # Type=Application
 # Version=1.0
+
+# Parameters:
+cv="libx264"
+crf="23"
+preset="slow"
+ca="libfdk_aac"
+ba="192k"
 
 # Do not edit below this line.
 
