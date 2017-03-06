@@ -1,0 +1,13 @@
+[Desktop Entry]
+Categories=AudioVideo;Video;
+Comment=Batch video transcode Bash script
+Exec="\\$HOME/scripts/vidTranscode" %F
+GenericName=vidTranscode
+MimeType=video/avi;video/mpeg;video/x-motion-jpeg;video/quicktime;video/mkv;video/mp4;
+Name=vidTranscode
+NoDisplay=false
+StartupNotify=true
+Terminal=true
+Type=Application
+Version=1.0
+

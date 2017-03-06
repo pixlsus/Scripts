@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+#
+# This Bash script transcodes the specificed video files (wildcards supported) to lossy h.264 format in an MP4 container.
+#
+# Usage:
+# ./conv <video/files/with/path.ext>
+#
+# Examples:
+# /home/you/scripts/conv /home/you/videos/foo.avi
+# /home/you/scripts/conv /home/you/videos/*.avi
+# /home/you/scripts/conv /home/you/videos/*
+#
+# Parameters:
+cv="libx264"
+crf="23"
+preset="slow"
+ca="libfdk_aac"
+ba="192k"
+#
+#
+# Sample .desktop file in $HOME/.local/share/applications/vidTranscode.desktop
+#
+# [Desktop Entry]
+# Categories=AudioVideo;Video;
+# Comment=Batch video transcode Bash script
+# Exec="\\$HOME/scripts/vidTranscode" %F
+# GenericName=vidTranscode
+# MimeType=video/avi;video/mpeg;video/x-motion-jpeg;video/quicktime;video/mkv;video/mp4;
+# Name=vidTranscode
+# NoDisplay=false
+# StartupNotify=true
+# Terminal=true
+# Type=Application
+# Version=1.0
+
+# Do not edit below this line.
+
+# Formatting
+fNormal="$(tput sgr0)"
+fBold="$(tput bold)"
+
+# Keep junk files in /tmp
+pushd /tmp || exit 1
+
+# Test input files for validity, abort if invalid.
+for f in "$@"; do
+    ffprobe -v error "${f}" 1>/dev/null
+    if [[ $? -ne 0 ]]; then
+        printf '%s\n' "The file is invalid:" "${f}" "Aborting."
+        exit 1
+    fi
+done
+
+# Do the conversion.
+    count="1"
+for f in "$@"; do
+    printf '%s\n' "" "${fBold}Converting file ${count}/${#@}${fNormal}" "${f}"
+    #printf '%s\n' "ffmpeg -i \"${f}\" -y -f mp4 -c:a \"${ca}\" -b:a \"${ba}\" -c:v \"${cv}\" -crf \"${crf}\" -preset \"${preset}\" -map_metadata 0 \"${f%.*}_${cv}_${crf}_${preset}.mp4\""
+    ffmpeg -i "${f}" -y -f mp4 -c:a "${ca}" -b:a "${ba}" -c:v "${cv}" -crf "${crf}" -preset "${preset}" -map_metadata 0 "${f%.*}_${cv}_${crf}_${preset}.mp4" || exit 1
+    ((count++))
+done
+
+# Done
+popd
+printf '%s\n' "" "Transcoding finished." ""
+
