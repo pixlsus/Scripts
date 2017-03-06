@@ -52,7 +52,7 @@ for f in "$@"; do
 done
 
 # Do the conversion.
-    count="1"
+count="1"
 for f in "$@"; do
     printf '%s\n' "" "${fBold}Converting file ${count}/${#@}${fNormal}" "${f}"
     #printf '%s\n' "ffmpeg -i \"${f}\" -y -f mp4 -c:a \"${ca}\" -b:a \"${ba}\" -c:v \"${cv}\" -crf \"${crf}\" -preset \"${preset}\" -map_metadata 0 \"${f%.*}_${cv}_${crf}_${preset}.mp4\""
