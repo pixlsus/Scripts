@@ -95,8 +95,7 @@ If you want to see how the sausage is made, here's the code from filmsim.sh:
 Dcraw can process pretty much any kind of camera raw file. So you can process any raw file you want. Just tell it the proper file extension when it asks you too. (e.g., .orf for Olympus raw files). 
 The file picker dialog produced by Termux-API also alloys access to the SD card or external OTG storage. For me, this means I can process .orf raw files from my Olympus OM-D E-M10 ii directly from an OTG card reader plugged into the phone. This makes for a pretty powerful mobile photo studio to go from camera raw to processed JPEG, and then upload to social media with your phone...
 
-Here is a sample .dng raw image captured with my Nexus 5x phone and Open Camera:
- <a class="attachment" href="//pixls-discuss.s3.amazonaws.com/original/2X/5/53f2c4f24d3f4a9d10559502f6591e5354eb19f3.dng">IMG_20170114_162311.dng</a> (23.6 MB)
+Here is a [sample .dng raw image](https://github.com/PixlsStuff/Scripts/blob/master/android_filmsim/IMG_20170114_162311.dng) captured with my Nexus 5x phone and Open Camera.
  
  Here's a processed version of that image: <img src="//pixls-discuss.s3.amazonaws.com/original/2X/a/a7b29b54941dea6db499b9dcbec6037455d32e40.jpg" width="690" height="517">
  
