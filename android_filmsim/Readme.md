@@ -46,7 +46,7 @@ First things first, however: we need to get Termux installed, and then add a few
 
 We now have Termux ready to go, but we aren't finished yet. We will have to arrange some files and get our script set up to be run as widget. We can do that with [Amaze File Manager](https://f-droid.org/repository/browse/?fdfilter=amaze&fdid=com.amaze.filemanager) and from the Termux command line itself. The main directory for Termux is `storage`, and from there you can `cd storage\dcim\`, where you can stage these files in the next steps.
 
-#### A RAW development approach
+#### An Android RAW development approach
 
 The raw development approach that I came up with relies on using your favorite hald CLUTs to alter the colors of your raw images to a final jpeg right from the command line. I use @patdavid's awesome [film emulation hald CLUTs](http://blog.patdavid.net/2015/03/film-emulation-in-rawtherapee.html). This is accomplished using [dcraw](https://www.cybercom.net/~dcoffin/dcraw/) to decode the RAW image, and [graphicsmagick](http://www.graphicsmagick.org/) to apply the hald-CLUT tone adjustments. These two tools are the heart of my filmsim.sh script, which helps you to automate that process. We installed dcraw and graphicsmagick already, but we need to get some other things set up for all this to work:
 
@@ -59,8 +59,9 @@ The raw development approach that I came up with relies on using your favorite h
 
 #### Let's get processing!
 
+ADD HERE A SET OF STEPS TO CONDUCT A POST_PROCESS. PERHAPS A YOUTUBE VIDEO?
 
-#### filmsim.sh code
+#### Code:
 
 If you want to see how the sausage is made, here's the code from filmsim.sh:
 
@@ -92,10 +93,19 @@ If you want to see how the sausage is made, here's the code from filmsim.sh:
 
 #### Notes:
 
-Dcraw can process pretty much any kind of camera raw file. So you can process any raw file you want. Just tell it the proper file extension when it asks you too. (e.g., .orf for Olympus raw files). 
-The file picker dialog produced by Termux-API also alloys access to the SD card or external OTG storage. For me, this means I can process .orf raw files from my Olympus OM-D E-M10 ii directly from an OTG card reader plugged into the phone. This makes for a pretty powerful mobile photo studio to go from camera raw to processed JPEG, and then upload to social media with your phone...
+1. Dcraw can process pretty much any kind of camera raw file. So you can process any raw file you want. Just tell it the proper file extension when it asks you too. (e.g., .orf for Olympus raw files). 
+2. The file picker dialog produced by Termux-API also alloys access to the SD card or external OTG storage. For me, this means I can process .orf raw files from my Olympus OM-D directly from an OTG card reader plugged into the phone. 
+3. This makes for a pretty powerful mobile photo studio to go from camera raw to processed JPEG, and then upload to social media with your phone...
 
-Here is a [sample .dng raw image](https://github.com/PixlsStuff/Scripts/blob/master/android_filmsim/IMG_20170114_162311.dng) captured with my Nexus 5x phone and Open Camera.
- 
- Here's a processed version of that image: <img src="//pixls-discuss.s3.amazonaws.com/original/2X/a/a7b29b54941dea6db499b9dcbec6037455d32e40.jpg" width="690" height="517">
+#### Examples:
+
+Here is a link to a [sample .dng raw image](https://github.com/PixlsStuff/Scripts/blob/master/android_filmsim/Sample_Image/IMG_20170114_162311.dng) captured with my Nexus 5x phone and Open Camera.
+
+Here's what the image looked like straight out of the camera:
+
+![SOOC](https://raw.githubusercontent.com/PixlsStuff/Scripts/master/android_filmsim/Sample_Image/IMG_20170114_162311.jpg)
+
+Here's what it looks like with a Kodak Vista hald-CLUT applied:
+
+![Vista](https://raw.githubusercontent.com/PixlsStuff/Scripts/master/android_filmsim/Sample_Image/IMG_20170114_162311_Vista.jpg)
  
