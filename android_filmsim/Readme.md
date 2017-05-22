@@ -59,7 +59,17 @@ The raw development approach that I came up with relies on using your favorite h
 
 #### Let's get processing!
 
-ADD HERE A SET OF STEPS TO CONDUCT A POST_PROCESS. PERHAPS A YOUTUBE VIDEO?
+1. Capture a raw camera image. Use the Open Shot app on your phone, or use your "real" camera. 
+2. If you used an external camera, mount the SD card, or otherwise transfer the raw file of your image to your phone.
+3. Start the "filmsim.sh" script by tapping on the Termux widget icon you created for it in the instructions above. A Termux session will open, and you will be greeted with a series of pop up dialogs to guide you through the operations.
+4. In the first popup dialog, enter the extension of the raw file you will load. For example, enter ".dng" for a raw file in the Adobe DNG format, or ".orf" for a raw file in the Olympus raw format. Don't leave off the "." Tap "Okay" to proceed to the next step.
+5. In the next pop up dialog, navigate to the location of the raw file you want to process. If you use Open Camera, this will be in `/dcim/OpenCamera/`. Note that you can also pull a file directly from a mounted SD card or other connected external storage device. Tap "Okay" to proceed to the next step.
+6. In the next pop up dialog, navigate to the hald-CLUT file you want to use to process the colors in your raw file. This could also be on an external drive. Tap "Okay" to proceed to the next step.
+7. In the final pop up dialog, enter the full name of the processed output file created from your raw image. This should have the appropriate file extension. For example, enter "my_processed_image.jpg" to save out a JPEG, or "my_processed_image.png" to save out a PNG. You can enter any common image file format. Tap "Okay" to start the image processing operation.
+8. Be patient while the program works. If you raw file is large and your phone not so great, this could take a while.
+9. When the operation is done, it will ask you to "Press any key to exit". When you do so, the Termux session will terminate. You can find your image in the `/dcim/Camera` directory. It should also now show up in your gallery app.
+
+*NOTE: PERHAPS ADD A YOUTUBE VIDEO?*
 
 #### Code:
 
