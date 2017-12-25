@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# By Morgan Hardwood
+# Version 2017-12-25
+# This script gets the latest source code for the given program and compiles it.
+
+# The name of the program, used for the folder names:
+prog="resynthesizer"
+
+# The name of the compiled executable:
+exe="resynthesizer"
+
+# The name of the sub-folder relative to the install prefix where the executable resides, if any,
+# e.g. if the executable is put into a folder called "bin" then set exeRelativePath="bin"
+exeRelativePath="src/resynthesizer"
+
+# The path to the repository:
+repo="https://github.com/bootchk/resynthesizer.git"
+
+# No touching below this line -------------------------------------------------
+
+buildOnly="false"
+buildType="release"
+exePath="${exeRelativePath}/${exe}"
+
+printf '%s\n' "" "Program name: ${prog}" "Build type: ${buildType}" "Build without updating: ${buildOnly}" ""
+
+# Command-line arguments
+OPTIND=1
+while getopts "bdh?-" opt; do
+    case "${opt}" in
+        b)  buildOnly="true"
+            ;;
+        d)  buildType="debug"
+            ;;
+        h|\?|-) printf '%s\n' "This script gets the latest source code for ${prog} and compiles it." \
+                "" \
+                "  -b" \
+                "     Optional. If specified, the script only compiles the source, it does not try to update the source. If not specified, the source will be updated first." \
+                "  -d" \
+                "     Optional. Compile a \"debug\" build. If not specified, a \"release\" build will be made." \
+                ""
+        exit 0
+        ;;
+    esac
+done
+shift $((OPTIND-1))
+[ "$1" = "--" ] && shift
+
+# Clone if needed
+cloned="false"
+updates="false"
+if [[ ! -d "$HOME/programs/code-${prog}" ]]; then
+    mkdir "$HOME/programs"
+    git clone "$repo" "$HOME/programs/code-${prog}" || exit 1
+    pushd "$HOME/programs/code-${prog}" || exit 1
+    cloned="true"
+else
+    pushd "$HOME/programs/code-${prog}" || exit 1
+    git fetch
+    if [[ $(git rev-parse HEAD) != $(git rev-parse @{u}) ]]; then
+        updates="true"
+    fi
+fi
+
+# Pull updates if necessary
+if [[ "$updates" = "true" && "$buildOnly" = "false" ]]; then
+    git pull || exit 1
+fi
+
+existsExe="false"
+if [[ -e "$HOME/programs/${prog}/${exePath}" ]]; then
+    existsExe="true"
+fi
+
+# Quit if no updates and build-only flag not set
+if [[ "$cloned" = "false" && "$buildOnly" = "false" && "$updates" = "false" && "$existsExe" = "true" ]]; then
+    printf '%s\n' "No updates, nothing to do."
+    exit 0
+fi
+
+# Compile
+rm -rf "$HOME/programs/${prog}"
+mkdir -p "$HOME/programs/${prog}" || exit 1
+cd "$HOME/programs/${prog}" || exit 1
+
+$HOME/programs/code-${prog}/autogen.sh || exit 1
+$HOME/programs/code-${prog}/configure || exit 1
+make || exit 1
+
+printf "%s\n" "" "Enter the sudo password to commence installation."
+sudo make install || exit 1
+
+printf "%s\n" "" "Resynthesizer is ready for use in GIMP." ""
+popd
