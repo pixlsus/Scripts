@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # By Morgan Hardwood
-# Version 2017-05-09
+# Version 2017-12-25
 # This script gets the latest source code for the given program and compiles it.
 
 # The name of the program, used for the folder names:
@@ -9,18 +9,31 @@ prog="lhdr"
 # The name of the compiled executable:
 exe="luminance-hdr"
 
-# The name of the sub-folder relative to the install prefix where the executable resides, if any,
-# e.g. if the executable is put into a folder called "bin" then set exeRelativePath="bin"
-exeRelativePath=""
+# The name of the sub-folder, if any, relative to the folder into which the
+# compiled executable is placed.
+# e.g. If the executable ends up in:
+#   ~/programs/someProgram/foo/bar/someExecutable
+# then set it to:
+#   exeRelativePath="foo/bar"
+# or if the executable ends up in
+#   ~/programs/someProgram/someExecutable
+# then leave it empty:
+# exeRelativePath=""
+exeRelativePath="bin"
 
 # The path to the repository:
 repo="https://github.com/LuminanceHDR/LuminanceHDR.git"
 
-# No touching below this line -------------------------------------------------
+# No touching below this line, with the exception of the "Compile" section
+# -----------------------------------------------------------------------------
 
 buildOnly="false"
 buildType="release"
-exePath="${exeRelativePath}/${exe}"
+
+# Removes the trailing forward-slash if one is present
+exeRelativePath="${exeRelativePath/%\/}"
+# Append forward-slash to exeRelativePath only if it is not empty.
+exePath="${exeRelativePath:+${exeRelativePath}/}${exe}"
 
 printf '%s\n' "" "Program name: ${prog}" "Build type: ${buildType}" "Build without updating: ${buildOnly}" ""
 
@@ -50,14 +63,14 @@ shift $((OPTIND-1))
 cloned="false"
 updates="false"
 if [[ ! -d "$HOME/programs/code-${prog}" ]]; then
-    mkdir "$HOME/programs"
+    mkdir -p "$HOME/programs" || exit 1
     git clone "$repo" "$HOME/programs/code-${prog}" || exit 1
     pushd "$HOME/programs/code-${prog}" || exit 1
     cloned="true"
 else
     pushd "$HOME/programs/code-${prog}" || exit 1
     git fetch
-    if [[ $(git rev-parse HEAD) != $(git rev-parse @{u}) ]]; then
+    if [[ $(git rev-parse HEAD) != $(git rev-parse '@{u}') ]]; then
         updates="true"
     fi
 fi
@@ -78,20 +91,35 @@ if [[ "$cloned" = "false" && "$buildOnly" = "false" && "$updates" = "false" && "
     exit 0
 fi
 
+# Determine CPU count
+cpuCount="fail"
+if command -v nproc >/dev/null 2>&1; then
+    cpuCount="$(nproc --all)"
+fi
+if [[ ! ( $cpuCount -ge 1 && $cpuCount -le 64 ) ]]; then
+    cpuCount=1
+fi
+
+# Prepare folders
+rm -rf "$HOME/programs/${prog}" "$HOME/programs/code-${prog}/build"
+mkdir -p "$HOME/programs/${prog}" "$HOME/programs/code-${prog}/build" || exit 1
+cd "$HOME/programs/code-${prog}/build" || exit 1
+
+# -----------------------------------------------------------------------------
 # Compile
-rm -rf "$HOME/programs/${prog}"
-mkdir -p "$HOME/programs/${prog}" || exit 1
-cd "$HOME/programs/${prog}" || exit 1
 
 cmake \
     -DCMAKE_CXX_FLAGS="-std=c++11 -Wno-deprecated-declarations -Wno-unused-result" \
-    -DCMAKE_INSTALL_PREFIX="$prog" \
+    -DCMAKE_INSTALL_PREFIX="$HOME/programs/${prog}" \
     -DCMAKE_BUILD_TYPE="$buildType"  \
     -DCMAKE_C_FLAGS="-O3 -pipe" \
     -DCMAKE_CXX_FLAGS="${CMAKE_C_FLAGS}" \
-    "$HOME/programs/code-${prog}"
+    "$HOME/programs/code-${prog}" || exit 1
 
+make --jobs="$cpuCount" || exit 1
 make install || exit 1
 
-printf "%s\n" "" "To run ${prog} type:" "~/programs/${prog}/${exePath}" ""
-popd
+# Finished
+printf '%s\n' "" "To run ${prog} type:" "~/programs/${prog}/${exePath}" ""
+
+popd 1>/dev/null

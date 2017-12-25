@@ -4,7 +4,7 @@
 # This script gets the latest source code for the given program and compiles it.
 
 # The name of the program, used for the folder names:
-prog="resynthesizer"
+prog="hdrmerge"
 
 # The name of the compiled executable:
 exe="${prog}"
@@ -19,10 +19,10 @@ exe="${prog}"
 #   ~/programs/someProgram/someExecutable
 # then leave it empty:
 # exeRelativePath=""
-exeRelativePath="src/resynthesizer"
+exeRelativePath="bin"
 
 # The path to the repository:
-repo="https://github.com/bootchk/resynthesizer.git"
+repo="git@github.com:jcelaya/hdrmerge.git"
 
 # No touching below this line, with the exception of the "Compile" section
 # -----------------------------------------------------------------------------
@@ -101,21 +101,28 @@ if [[ ! ( $cpuCount -ge 1 && $cpuCount -le 64 ) ]]; then
 fi
 
 # Prepare folders
-rm -rf "$HOME/programs/code-${prog}/build"
-mkdir -p "$HOME/programs/code-${prog}/build" || exit 1
-cd "$HOME/programs/code-${prog}/build" || exit 1
+#mkdir "$HOME/programs/${prog}"
+#cd "$HOME/programs/${prog}" || exit 1
+rm -rf build "$HOME/programs/${prog}"
+mkdir build || exit 1
+cd build || exit 1
 
 # -----------------------------------------------------------------------------
 # Compile
 
-../autogen.sh || exit 1
-../configure || exit 1
-make --jobs="$cpuCount" CFLAGS='-O3' || exit 1
+cmake \
+    -DCMAKE_CXX_FLAGS="-std=c++11 -Wno-deprecated-declarations -Wno-unused-result" \
+    -DCMAKE_INSTALL_PREFIX="$HOME/programs/${prog}" \
+    -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="." \
+    -DCMAKE_BUILD_TYPE="$buildType"  \
+    -DCMAKE_C_FLAGS="-O2 -pipe" \
+    -DCMAKE_CXX_FLAGS="${CMAKE_C_FLAGS}" \
+    "$HOME/programs/code-${prog}" || exit 1
 
-printf '%s\n' "" "Enter the sudo password to commence installation."
-sudo make install || exit 1
+make --jobs="$cpuCount" || exit 1
+make install || exit 1
 
 # Finished
-printf '%s\n' "" "Resynthesizer is ready for use in GIMP." "Run GIMP, go to > Preferences > Folders > Plug-ins and make sure that /usr/local/lib/gimp/2.0/plug-ins is in the list - if it is not, add it." ""
+printf '%s\n' "" "To run ${prog} type:" "~/programs/${prog}/${exePath}" ""
 
 popd 1>/dev/null
