@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # By Morgan Hardwood
-# Version 2017-12-25
+# Version 2017-12-29
 # This script gets the latest source code for the given program and compiles it.
 
 # The name of the program, used for the folder names:
@@ -35,8 +35,6 @@ exeRelativePath="${exeRelativePath/%\/}"
 # Append forward-slash to exeRelativePath only if it is not empty.
 exePath="${exeRelativePath:+${exeRelativePath}/}${exe}"
 
-printf '%s\n' "" "Program name: ${prog}" "Build type: ${buildType}" "Build without updating: ${buildOnly}" ""
-
 # Command-line arguments
 OPTIND=1
 while getopts "bdh?-" opt; do
@@ -58,6 +56,8 @@ while getopts "bdh?-" opt; do
 done
 shift $((OPTIND-1))
 [ "$1" = "--" ] && shift
+
+printf '%s\n' "" "Program name: ${prog}" "Build type: ${buildType}" "Build without updating: ${buildOnly}" ""
 
 # Clone if needed
 cloned="false"
