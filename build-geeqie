@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # By Morgan Hardwood
-# Version 2017-12-29
+# Version 2018-01-06
 # This script gets the latest source code for the given program and compiles it.
 
 # The name of the program, used for the folder names:
@@ -26,6 +26,9 @@ repo="git://www.geeqie.org/geeqie.git"
 
 # No touching below this line, with the exception of the "Compile" section
 # -----------------------------------------------------------------------------
+
+# The name of the project's standard branch, typically "master":
+master="master"
 
 buildOnly="false"
 buildType="release"
@@ -65,10 +68,10 @@ updates="false"
 if [[ ! -d "$HOME/programs/code-${prog}" ]]; then
     mkdir -p "$HOME/programs" || exit 1
     git clone "$repo" "$HOME/programs/code-${prog}" || exit 1
-    pushd "$HOME/programs/code-${prog}" || exit 1
+    pushd "$HOME/programs/code-${prog}" 1>/dev/null || exit 1
     cloned="true"
 else
-    pushd "$HOME/programs/code-${prog}" || exit 1
+    pushd "$HOME/programs/code-${prog}" 1>/dev/null || exit 1
     git fetch
     if [[ $(git rev-parse HEAD) != $(git rev-parse '@{u}') ]]; then
         updates="true"
@@ -80,8 +83,22 @@ if [[ "$updates" = "true" && "$buildOnly" = "false" ]]; then
     git pull || exit 1
 fi
 
+# Find out which branch git is on
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+# Set build and install folder names
+# 668f95b0 does not yet support out-of-source builds
+buildDir="$HOME/programs/code-${prog}"
+if [[ $branch = $master && $buildType = release ]]; then
+    #buildDir="$HOME/programs/code-${prog}/build"
+    installDir="$HOME/programs/${prog}"
+else
+    #buildDir="$HOME/programs/code-${prog}/build-${branch}-${buildType}"
+    installDir="$HOME/programs/${prog}-${branch}-${buildType}"
+fi
+
 existsExe="false"
-if [[ -e "$HOME/programs/${prog}/${exePath}" ]]; then
+if [[ -e "${installDir}/${exePath}" ]]; then
     existsExe="true"
 fi
 
@@ -101,20 +118,19 @@ if [[ ! ( $cpuCount -ge 1 && $cpuCount -le 64 ) ]]; then
 fi
 
 # Prepare folders
-# 668f95b0 does not yet support out-of-source builds
-rm -rf "$HOME/programs/${prog}"
-mkdir -p "$HOME/programs/${prog}" || exit 1
-cd "$HOME/programs/code-${prog}" || exit 1
+rm -rf "${installDir}"
+mkdir -p "${installDir}" || exit 1
+cd "${buildDir}" || exit 1
 
 # -----------------------------------------------------------------------------
 # Compile
 
-./autogen.sh --prefix="$HOME/programs/${prog}" || exit 1
+./autogen.sh --prefix="${installDir}" || exit 1
 
 make --jobs="$cpuCount" || exit 1
 make install || exit 1
 
 # Finished
-printf '%s\n' "" "To run ${prog} type:" "~/programs/${prog}/${exePath}" ""
+printf '%s\n' "" "To run ${prog} type:" "${installDir}/${exePath}" ""
 
 popd 1>/dev/null
