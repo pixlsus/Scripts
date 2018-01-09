@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # By Morgan Hardwood
-# Version 2018-01-06
+# Version 2018-01-09
 # This script gets the latest source code for the given program and compiles it.
 
 # The name of the program, used for the folder names:
@@ -22,7 +22,7 @@ exe="${prog}"
 exeRelativePath="bin"
 
 # The path to the repository:
-repo="git@github.com:jcelaya/hdrmerge.git"
+repo="https://github.com/jcelaya/hdrmerge.git"
 
 # No touching below this line, with the exception of the "Compile" section
 # -----------------------------------------------------------------------------
