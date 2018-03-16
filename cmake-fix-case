@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Recursively finds all CMake files, then converts CMake commands to lowercase
+# and removes spaces between command and opening brace.
+#
+# Usage:
+#   cd ~/repo
+#   ~/scripts/cmake-fix-case
+
+while read -r; do
+    lcCmd="$REPLY"
+    ucCmd="${lcCmd^^}"
+    printf '%s\n' "Replacing \"$ucCmd\" with \"$lcCmd\"..."
+    find . \( -iname "CMakeLists.txt" -or -iname "*.cmake" \) -exec sed -i -e "s/$ucCmd *(/$lcCmd(/g" -e "s/$lcCmd *(/$lcCmd(/g" {} \;
+done < <(cmake --help-command-list | grep -iv 'cmake version')
