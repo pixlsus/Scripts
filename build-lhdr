@@ -127,7 +127,7 @@ cmake \
     -DCMAKE_CXX_FLAGS="-std=c++11 -Wno-deprecated-declarations -Wno-unused-result" \
     -DCMAKE_INSTALL_PREFIX="${installDir}" \
     -DCMAKE_BUILD_TYPE="$buildType"  \
-    -DCMAKE_C_FLAGS="-O3 -pipe" \
+    -DCMAKE_C_FLAGS="-O2 -pipe" \
     -DCMAKE_CXX_FLAGS="${CMAKE_C_FLAGS}" \
     "$HOME/programs/code-${prog}" || exit 1
 
