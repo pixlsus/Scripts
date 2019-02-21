@@ -123,8 +123,6 @@ cd "${buildDir}" || exit 1
 # -----------------------------------------------------------------------------
 # Compile
 
-export QT_SELECT="qt4"
-
 #    -DCMAKE_INSTALL_BINDIR:STRING="${installDir}" \
 cmake \
     -DCMAKE_CXX_FLAGS="-std=c++11 -Wno-deprecated-declarations -Wno-unused-result" \
